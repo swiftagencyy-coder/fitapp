@@ -21,8 +21,15 @@ const steps = [
     'Health & Diet'
 ];
 
+import { useRouter } from 'next/navigation';
+import { createPersonalizedPlan } from '@/app/onboarding/actions';
+import { Loader2, Sparkles } from 'lucide-react';
+
 export function OnboardingForm() {
+    const router = useRouter();
     const [currentStep, setCurrentStep] = useState(0);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const totalSteps = steps.length;
     const progress = ((currentStep + 1) / totalSteps) * 100;
 
@@ -43,13 +50,57 @@ export function OnboardingForm() {
     });
 
     const onSubmit = async (data: OnboardingData) => {
-        console.log('Onboarding Complete:', data);
-        // In production, this would save to Supabase
-        alert('Onboarding data saved! Generating your plan...');
+        setIsProcessing(true);
+        setError(null);
+
+        try {
+            const result = await createPersonalizedPlan(data);
+            if (result.success) {
+                router.push('/dashboard');
+                router.refresh();
+            } else {
+                setError(result.error || 'Failed to generate plan');
+                setIsProcessing(false);
+            }
+        } catch (e) {
+            setError('An unexpected error occurred');
+            setIsProcessing(false);
+        }
     };
 
     const nextStep = () => currentStep < totalSteps - 1 && setCurrentStep(s => s + 1);
     const prevStep = () => currentStep > 0 && setCurrentStep(s => s - 1);
+
+    if (isProcessing) {
+        return (
+            <Card className="bg-white/5 border-white/10 backdrop-blur-xl p-12 text-center space-y-8 max-w-xl mx-auto">
+                <div className="relative">
+                    <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
+                    <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                        className="relative z-10 w-24 h-24 border-4 border-primary/20 border-t-primary rounded-full mx-auto flex items-center justify-center"
+                    >
+                        <Sparkles className="text-primary animate-pulse" size={40} />
+                    </motion.div>
+                </div>
+                <div className="space-y-3">
+                    <h2 className="text-3xl font-black italic tracking-tight uppercase">Architecting your protocol...</h2>
+                    <p className="text-muted-foreground">Our AI is analyzing your biomarkers and engineering the optimal training volume.</p>
+                </div>
+                <div className="flex gap-2 justify-center">
+                    {[0, 1, 2].map(i => (
+                        <motion.div
+                            key={i}
+                            animate={{ scale: [1, 1.5, 1] }}
+                            transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                            className="w-2 h-2 bg-primary rounded-full"
+                        />
+                    ))}
+                </div>
+            </Card>
+        );
+    }
 
     return (
         <div className="max-w-2xl mx-auto w-full">
@@ -62,6 +113,11 @@ export function OnboardingForm() {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)}>
+                {error && (
+                    <div className="mb-6 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+                        {error}
+                    </div>
+                )}
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={currentStep}
@@ -80,12 +136,12 @@ export function OnboardingForm() {
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <Label htmlFor="age">Age</Label>
-                                                <Input id="age" type="number" {...register('age', { valueAsNumber: true })} className="bg-black/20" />
+                                                <Input id="age" type="number" {...register('age', { valueAsNumber: true })} className="bg-black/20 text-white" />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label>Gender</Label>
                                                 <Select onValueChange={(v) => setValue('gender', v as any)}>
-                                                    <SelectTrigger className="bg-black/20">
+                                                    <SelectTrigger className="bg-black/20 text-white">
                                                         <SelectValue placeholder="Select" />
                                                     </SelectTrigger>
                                                     <SelectContent>
@@ -106,17 +162,17 @@ export function OnboardingForm() {
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <Label htmlFor="height">Height (cm)</Label>
-                                                <Input id="height" type="number" {...register('height', { valueAsNumber: true })} className="bg-black/20" />
+                                                <Input id="height" type="number" {...register('height', { valueAsNumber: true })} className="bg-black/20 text-white" />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="weight">Weight (kg)</Label>
-                                                <Input id="weight" type="number" {...register('weight', { valueAsNumber: true })} className="bg-black/20" />
+                                                <Input id="weight" type="number" {...register('weight', { valueAsNumber: true })} className="bg-black/20 text-white" />
                                             </div>
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Body Type</Label>
                                             <Select onValueChange={(v) => setValue('body_type', v as any)}>
-                                                <SelectTrigger className="bg-black/20">
+                                                <SelectTrigger className="bg-black/20 text-white">
                                                     <SelectValue placeholder="Body Type" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -137,7 +193,7 @@ export function OnboardingForm() {
                                         <div className="space-y-2">
                                             <Label>Primary Goal</Label>
                                             <Select onValueChange={(v) => setValue('primary_goal', v as any)}>
-                                                <SelectTrigger className="bg-black/20">
+                                                <SelectTrigger className="bg-black/20 text-white">
                                                     <SelectValue placeholder="Goal" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -152,7 +208,7 @@ export function OnboardingForm() {
                                         <div className="space-y-2">
                                             <Label>Experience Level</Label>
                                             <Select onValueChange={(v) => setValue('fitness_level', v as any)}>
-                                                <SelectTrigger className="bg-black/20">
+                                                <SelectTrigger className="bg-black/20 text-white">
                                                     <SelectValue placeholder="Experience" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -171,12 +227,12 @@ export function OnboardingForm() {
                                         <h2 className="text-2xl font-bold">Training Availability</h2>
                                         <div className="space-y-2">
                                             <Label>Days per week</Label>
-                                            <Input type="number" min={1} max={7} {...register('training_days_per_week', { valueAsNumber: true })} className="bg-black/20" />
+                                            <Input type="number" min={1} max={7} {...register('training_days_per_week', { valueAsNumber: true })} className="bg-black/20 text-white" />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Workout Environment</Label>
                                             <Select onValueChange={(v) => setValue('training_environment', v as any)}>
-                                                <SelectTrigger className="bg-black/20">
+                                                <SelectTrigger className="bg-black/20 text-white">
                                                     <SelectValue placeholder="Where will you train?" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -191,13 +247,13 @@ export function OnboardingForm() {
                                 )}
 
                                 {/* Step 5: Nutrition */}
-                                {currentStep === 4 && (currentStep === 4 && (
+                                {currentStep === 4 && (
                                     <div className="space-y-4">
                                         <h2 className="text-2xl font-bold">Health & Nutrition</h2>
                                         <div className="space-y-2">
                                             <Label>Fasting Style</Label>
                                             <Select onValueChange={(v) => setValue('fasting_style', v as any)}>
-                                                <SelectTrigger className="bg-black/20">
+                                                <SelectTrigger className="bg-black/20 text-white">
                                                     <SelectValue placeholder="Fasting" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -210,10 +266,10 @@ export function OnboardingForm() {
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="injuries">Injuries or Limitations</Label>
-                                            <Input id="injuries" placeholder="e.g. Knee pain, Lower back" {...register('injuries')} className="bg-black/20" />
+                                            <Input id="injuries" placeholder="e.g. Knee pain, Lower back" {...register('injuries')} className="bg-black/20 text-white" />
                                         </div>
                                     </div>
-                                ))}
+                                )}
 
                             </CardContent>
                         </Card>
@@ -225,7 +281,7 @@ export function OnboardingForm() {
                         type="button"
                         variant="ghost"
                         onClick={prevStep}
-                        disabled={currentStep === 0}
+                        disabled={currentStep === 0 || isProcessing}
                         className="flex-1 rounded-2xl h-12"
                     >
                         <ArrowLeft className="mr-2" size={18} />
@@ -244,10 +300,15 @@ export function OnboardingForm() {
                     ) : (
                         <Button
                             type="submit"
+                            disabled={isProcessing}
                             className="flex-1 bg-primary text-black hover:bg-primary/90 rounded-2xl h-12 shadow-[0_0_20px_-5px_rgba(204,255,0,0.4)]"
                         >
-                            Finish & Generate
-                            <CheckCircle2 className="ml-2" size={18} />
+                            {isProcessing ? <Loader2 className="animate-spin" /> : (
+                                <>
+                                    Finish & Generate
+                                    <CheckCircle2 className="ml-2" size={18} />
+                                </>
+                            )}
                         </Button>
                     )}
                 </div>
