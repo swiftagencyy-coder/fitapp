@@ -6,7 +6,7 @@ import Providers from "./providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "FitTwin AI | Premium Cyber-Slate Fitness Coaching",
+  title: "FitTwin AI | Elite Performance Protocols",
   description: "Personalized AI-powered workout programs, progress tracking, and 24/7 coaching for beginners and pros.",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 };

@@ -9,9 +9,6 @@ import { cn } from '@/lib/utils';
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 selection:text-white overflow-hidden">
-      <h1 style={{ color: 'red', fontSize: '100px', position: 'fixed', top: 0, left: 0, zIndex: 9999, background: 'white' }}>
-        IF YOU SEE THIS THE APP IS UPDATING
-      </h1>
       {/* Header */}
       <nav className="fixed top-0 w-full z-50 glass border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">

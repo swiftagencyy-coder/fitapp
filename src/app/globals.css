@@ -1,26 +1,138 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-/* NUCLEAR TEST: IF YOU SEE RED BORDERS AND BLUE BG, CSS IS LOADING */
-* {
-  border: 5px solid #ff0000 !important;
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-body {
-  background-color: #0000ff !important;
+:root {
+  --background: 240 10% 98%;
+  --foreground: 240 10% 4%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 4%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 4%;
+  --primary: 240 10% 10%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 5% 95%;
+  --secondary-foreground: 240 10% 10%;
+  --muted: 240 5% 95%;
+  --muted-foreground: 240 4% 46%;
+  --accent: 240 5% 95%;
+  --accent-foreground: 240 10% 10%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 6% 90%;
+  --input: 240 6% 90%;
+  --ring: 240 10% 10%;
+  --radius: 1rem;
 }
 
-@theme {
-  --color-background: #1a1a1e;
-  --color-foreground: #fafafa;
-  --color-primary: #ccff00;
-  --color-border: #2a2a2e;
+.dark {
+  --background: 240 10% 10%;
+  /* Primary Cyber-Slate */
+  --foreground: 0 0% 98%;
+
+  --card: 240 10% 12%;
+  --card-foreground: 0 0% 98%;
+
+  --popover: 240 10% 11%;
+  --popover-foreground: 0 0% 98%;
+
+  --primary: 76 95% 58%;
+  /* Electric Lime */
+  --primary-foreground: 240 10% 4%;
+
+  --secondary: 240 5% 18%;
+  --secondary-foreground: 0 0% 98%;
+
+  --muted: 240 5% 15%;
+  --muted-foreground: 215 15% 65%;
+
+  --accent: 240 5% 22%;
+  --accent-foreground: 0 0% 98%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 240 5% 18%;
+  --input: 240 5% 15%;
+  --ring: 76 95% 58%;
 }
 
 @layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased min-h-screen relative;
+    background-image:
+      radial-gradient(circle at 0% 0%, hsla(240, 10%, 15%, 0.4) 0%, transparent 40%),
+      radial-gradient(circle at 100% 0%, hsla(76, 95%, 58%, 0.05) 0%, transparent 40%),
+      radial-gradient(circle at 50% 100%, hsla(240, 10%, 12%, 0.2) 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+
+  html {
+    @apply font-sans scroll-smooth;
   }
 }
 
-@import "shadcn/tailwind.css";
+@layer components {
+  .glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10 shadow-xl;
+  }
+
+  .glass-dark {
+    @apply bg-black/40 backdrop-blur-2xl border border-white/5 shadow-2xl transition-all duration-300;
+  }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-white/10 rounded-full hover:bg-primary/20 transition-colors;
+}
