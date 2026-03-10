@@ -3,11 +3,13 @@ import { OnboardingData } from '@/types/onboarding';
 import { WorkoutPlanSchema } from '@/types/workout';
 
 // Initialize the Google Generative AI SDK
+// Note: GOOGLE_AI_API_KEY must be set in your Environment Variables (Vercel or local .env)
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
 
 export async function generateWorkoutPlan(data: OnboardingData) {
+    // We use gemini-1.5-flash-latest as the most stable alias to avoid versioning 404s
     const model = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash",
+        model: "gemini-1.5-flash-latest",
         generationConfig: {
             responseMimeType: "application/json",
         },
@@ -36,16 +38,21 @@ export async function generateWorkoutPlan(data: OnboardingData) {
     Output ONLY the JSON object.
   `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-
     try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+
         const rawJson = JSON.parse(text);
         return WorkoutPlanSchema.parse(rawJson);
-    } catch (error) {
-        console.error("Gemini JSON Parsing Error:", error);
-        console.error("Raw Response:", text);
-        throw new Error("Failed to generate a valid training protocol. Please try again.");
+    } catch (error: any) {
+        console.error("Gemini AI Core Error:", error);
+
+        // Detailed error messaging for debugging
+        if (error.message?.includes('404')) {
+            throw new Error("AI Model mismatch (404). Please ensure 'gemini-1.5-flash-latest' is supported for your API key regions.");
+        }
+
+        throw new Error(`AI Generation Failed: ${error.message || 'Unknown protocol error'}`);
     }
 }
