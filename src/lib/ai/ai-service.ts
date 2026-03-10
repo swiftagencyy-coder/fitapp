@@ -3,18 +3,11 @@ import { OnboardingData } from '@/types/onboarding';
 import { WorkoutPlanSchema } from '@/types/workout';
 
 // Initialize the Google Generative AI SDK
-// Note: GOOGLE_AI_API_KEY must be set in your Environment Variables (Vercel or local .env)
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
 
 export async function generateWorkoutPlan(data: OnboardingData) {
-    // We use gemini-1.5-flash-latest as the most stable alias to avoid versioning 404s
-    const model = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash-latest",
-        generationConfig: {
-            responseMimeType: "application/json",
-        },
-        systemInstruction: "You are an Elite Fitness Architect. You generate ultra-personalized, data-driven training protocols. Output ONLY valid JSON that strictly follows the provided schema.",
-    });
+    // We try the most common model name: gemini-1.5-flash
+    let modelName = "gemini-1.5-flash";
 
     const prompt = `
     Role: Elite Fitness Architect.
@@ -39,6 +32,14 @@ export async function generateWorkoutPlan(data: OnboardingData) {
   `;
 
     try {
+        const model = genAI.getGenerativeModel({
+            model: modelName,
+            generationConfig: {
+                responseMimeType: "application/json",
+            },
+            systemInstruction: "You are an Elite Fitness Architect. You generate ultra-personalized, data-driven training protocols. Output ONLY valid JSON that strictly follows the provided schema.",
+        });
+
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text();
@@ -46,11 +47,30 @@ export async function generateWorkoutPlan(data: OnboardingData) {
         const rawJson = JSON.parse(text);
         return WorkoutPlanSchema.parse(rawJson);
     } catch (error: any) {
-        console.error("Gemini AI Core Error:", error);
+        console.error("Gemini AI Attempt 1 (Flash) Failed:", error.message);
 
-        // Detailed error messaging for debugging
+        // Fallback to gemini-pro if Flash is 404
         if (error.message?.includes('404')) {
-            throw new Error("AI Model mismatch (404). Please ensure 'gemini-1.5-flash-latest' is supported for your API key regions.");
+            console.log("Attempting fallback to gemini-pro...");
+            try {
+                const fallbackModel = genAI.getGenerativeModel({
+                    model: "gemini-pro",
+                    generationConfig: {
+                        // Note: gemini-pro (v1) might not support responseMimeType: "application/json" as strictly 
+                        // but it's better than nothing.
+                    }
+                });
+                const result = await fallbackModel.generateContent(prompt + " Output ONLY valid JSON.");
+                const response = await result.response;
+                const text = response.text();
+                // Strip markdown if needed
+                const jsonStr = text.replace(/```json|```/g, '').trim();
+                const rawJson = JSON.parse(jsonStr);
+                return WorkoutPlanSchema.parse(rawJson);
+            } catch (fallbackError: any) {
+                console.error("Gemini AI Fallback (Pro) also failed:", fallbackError.message);
+                throw new Error(`AI Service Unavailable. Both Flash and Pro models returned errors. ${fallbackError.message}`);
+            }
         }
 
         throw new Error(`AI Generation Failed: ${error.message || 'Unknown protocol error'}`);
