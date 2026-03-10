@@ -63,9 +63,9 @@ export function AuthForm({ type, onSubmit }: AuthFormProps) {
                     <motion.div
                         initial={{ scale: 0.8 }}
                         animate={{ scale: 1 }}
-                        className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-[0_0_30px_-5px_rgba(204,255,0,0.5)] mb-6"
+                        className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-[0_0_30px_-5px_hsl(var(--primary)/0.5)] mb-6"
                     >
-                        <Dumbbell className="text-black" size={26} strokeWidth={2.5} />
+                        <Dumbbell className="text-primary-foreground" size={26} strokeWidth={2.5} />
                     </motion.div>
                     <h1 className="text-4xl font-black tracking-tight uppercase leading-none">
                         {type === 'login' ? 'Welcome' : 'Join the'} <br />
@@ -111,7 +111,7 @@ export function AuthForm({ type, onSubmit }: AuthFormProps) {
                             type="email"
                             placeholder="m@example.com"
                             {...register('email')}
-                            className="bg-white/5 border-white/10 h-14 rounded-2xl text-lg px-6 focus:ring-primary/50 focus:border-primary transition-all backdrop-blur-sm text-white"
+                            className="bg-white/5 border-white/10 h-14 rounded-2xl text-lg px-6 focus:ring-primary/50 focus:border-primary transition-all backdrop-blur-sm text-foreground"
                         />
                         {errors.email && <p className="text-xs text-destructive ml-1">{errors.email.message}</p>}
                     </div>
@@ -123,14 +123,14 @@ export function AuthForm({ type, onSubmit }: AuthFormProps) {
                             type="password"
                             placeholder="••••••••"
                             {...register('password')}
-                            className="bg-white/5 border-white/10 h-14 rounded-2xl text-lg px-6 focus:ring-primary/50 focus:border-primary transition-all backdrop-blur-sm text-white"
+                            className="bg-white/5 border-white/10 h-14 rounded-2xl text-lg px-6 focus:ring-primary/50 focus:border-primary transition-all backdrop-blur-sm text-foreground"
                         />
                         {errors.password && <p className="text-xs text-destructive ml-1">{errors.password.message}</p>}
                     </div>
 
                     <Button
                         type="submit"
-                        className="w-full bg-primary text-black hover:bg-primary/90 h-14 rounded-2xl font-black text-lg shadow-[0_0_40px_-10px_rgba(204,255,0,0.5)] transition-all active:scale-95 group"
+                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-14 rounded-2xl font-black text-lg shadow-[0_0_40px_-10px_hsl(var(--primary)/0.5)] transition-all active:scale-95 group"
                         disabled={loading}
                     >
                         {loading ? <Loader2 className="animate-spin" /> : (
