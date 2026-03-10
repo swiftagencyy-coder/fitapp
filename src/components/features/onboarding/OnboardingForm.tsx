@@ -58,7 +58,7 @@ export function OnboardingForm() {
                     <span>Step {currentStep + 1} of {totalSteps}: {steps[currentStep]}</span>
                     <span>{Math.round(progress)}%</span>
                 </div>
-                <Progress value={progress} className="h-1 bg-white/5" indicatorClassName="bg-primary" />
+                <Progress value={progress} className="h-1 bg-white/5" />
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)}>

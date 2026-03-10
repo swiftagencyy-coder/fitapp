@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { User, Dumbbell, Target, Shield, Mail } from 'lucide-react';
+import { User, Dumbbell, Target, Shield, Mail, Zap } from 'lucide-react';
 
 export default function ProfilePage() {
     return (

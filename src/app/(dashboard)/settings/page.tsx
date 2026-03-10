@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Bell, Lock, Globe, Moon } from 'lucide-react';
+import { Bell, Lock, Globe, Moon, Shield } from 'lucide-react';
 
 export default function SettingsPage() {
     return (
