@@ -7,11 +7,11 @@ import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dumbbell, Loader2, AlertCircle } from 'lucide-react';
+import { Dumbbell, Loader2, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
-const authSchema = z.z.object({
+const authSchema = z.object({
     email: z.string().email('Invalid email address'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
 });
@@ -53,89 +53,117 @@ export function AuthForm({ type, onSubmit }: AuthFormProps) {
     };
 
     return (
-        <Card className="w-full max-w-md bg-white/5 border-white/10 backdrop-blur-md">
-            <CardHeader className="space-y-1 text-center">
-                <div className="flex justify-center mb-4">
-                    <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
-                        <Dumbbell className="text-black" size={28} />
-                    </div>
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full max-w-md"
+        >
+            <div className="space-y-8">
+                <div className="space-y-3">
+                    <motion.div
+                        initial={{ scale: 0.8 }}
+                        animate={{ scale: 1 }}
+                        className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-[0_0_30px_-5px_rgba(204,255,0,0.5)] mb-6"
+                    >
+                        <Dumbbell className="text-black" size={26} strokeWidth={2.5} />
+                    </motion.div>
+                    <h1 className="text-4xl font-black tracking-tight uppercase leading-none">
+                        {type === 'login' ? 'Welcome' : 'Join the'} <br />
+                        <span className="text-primary italic">FitTwin AI</span>
+                    </h1>
+                    <p className="text-muted-foreground text-lg">
+                        {type === 'login'
+                            ? 'Login to resume your digital physical evolution.'
+                            : 'Start your data-driven transformation today.'}
+                    </p>
                 </div>
-                <CardTitle className="text-2xl font-black tracking-tight uppercase">
-                    {type === 'login' ? 'Welcome Back' : 'Create Account'}
-                </CardTitle>
-                <CardDescription className="text-muted-foreground">
-                    {type === 'login'
-                        ? 'Enter your credentials to access your dashboard'
-                        : 'Join FitTwin AI and start your transformation'}
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-                    {error && (
-                        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center gap-2">
-                            <AlertCircle size={16} />
-                            {error}
-                        </div>
-                    )}
-                    {success && (
-                        <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-primary text-sm flex items-center gap-2">
-                            <CheckCircle2 size={16} />
-                            {success}
-                        </div>
-                    )}
+
+                <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-5">
+                    <AnimatePresence mode="wait">
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center gap-3"
+                            >
+                                <AlertCircle size={18} />
+                                {error}
+                            </motion.div>
+                        )}
+                        {success && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="p-4 rounded-2xl bg-primary/10 border border-primary/20 text-primary text-sm flex items-center gap-3"
+                            >
+                                <CheckCircle2 size={18} />
+                                {success}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email" className="text-xs uppercase font-black tracking-widest text-muted-foreground ml-1">Email Address</Label>
                         <Input
                             id="email"
                             type="email"
                             placeholder="m@example.com"
                             {...register('email')}
-                            className="bg-black/20 border-white/10 h-11"
+                            className="bg-white/5 border-white/10 h-14 rounded-2xl text-lg px-6 focus:ring-primary/50 focus:border-primary transition-all backdrop-blur-sm"
                         />
-                        {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+                        {errors.email && <p className="text-xs text-destructive ml-1">{errors.email.message}</p>}
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password" className="text-xs uppercase font-black tracking-widest text-muted-foreground ml-1">Secure Password</Label>
                         <Input
                             id="password"
                             type="password"
+                            placeholder="••••••••"
                             {...register('password')}
-                            className="bg-black/20 border-white/10 h-11"
+                            className="bg-white/5 border-white/10 h-14 rounded-2xl text-lg px-6 focus:ring-primary/50 focus:border-primary transition-all backdrop-blur-sm"
                         />
-                        {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+                        {errors.password && <p className="text-xs text-destructive ml-1">{errors.password.message}</p>}
                     </div>
 
                     <Button
                         type="submit"
-                        className="w-full bg-primary text-black hover:bg-primary/90 h-11 rounded-xl font-bold mt-2"
+                        className="w-full bg-primary text-black hover:bg-primary/90 h-14 rounded-2xl font-black text-lg shadow-[0_0_40px_-10px_rgba(204,255,0,0.5)] transition-all active:scale-95 group"
                         disabled={loading}
                     >
-                        {loading ? <Loader2 className="animate-spin" /> : (type === 'login' ? 'Login' : 'Sign Up')}
+                        {loading ? <Loader2 className="animate-spin" /> : (
+                            <>
+                                {type === 'login' ? 'ACCESS ACCOUNT' : 'CREATE ACCOUNT'}
+                                <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+                            </>
+                        )}
                     </Button>
 
-                    <div className="text-center text-sm text-muted-foreground mt-4">
+                    <div className="pt-4 text-center">
                         {type === 'login' ? (
-                            <p>
-                                Don't have an account?{' '}
-                                <Link href="/signup" className="text-primary hover:underline underline-offset-4">
-                                    Sign up
+                            <p className="text-muted-foreground">
+                                No account yet?{' '}
+                                <Link href="/signup" className="text-primary font-bold hover:underline underline-offset-4">
+                                    Sign up for free
                                 </Link>
                             </p>
                         ) : (
-                            <p>
-                                Already have an account?{' '}
-                                <Link href="/login" className="text-primary hover:underline underline-offset-4">
-                                    Login
+                            <p className="text-muted-foreground">
+                                Already evolving?{' '}
+                                <Link href="/login" className="text-primary font-bold hover:underline underline-offset-4">
+                                    Login here
                                 </Link>
                             </p>
                         )}
                     </div>
                 </form>
-            </CardContent>
-        </Card>
+
+                <div className="pt-8 border-t border-white/5">
+                    <p className="text-[10px] uppercase font-black tracking-[0.2em] text-center text-muted-foreground mb-4">Secured by Industry Standard Encryption</p>
+                </div>
+            </div>
+        </motion.div>
     );
 }
-
-import { CheckCircle2 } from 'lucide-react';
