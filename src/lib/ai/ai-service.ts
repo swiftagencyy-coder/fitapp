@@ -3,11 +3,16 @@ import { OnboardingData } from '@/types/onboarding';
 import { WorkoutPlanSchema } from '@/types/workout';
 
 // Initialize the Google Generative AI SDK
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || "");
 
 export async function generateWorkoutPlan(data: OnboardingData) {
-    // We try the most common model name: gemini-1.5-flash
-    let modelName = "gemini-1.5-flash";
+    // List of potential model identifiers to try in order of preference
+    const modelOptions = [
+        "gemini-1.5-flash",
+        "gemini-1.5-pro",
+        "gemini-1.0-pro",
+        "gemini-pro"
+    ];
 
     const prompt = `
     Role: Elite Fitness Architect.
@@ -31,48 +36,36 @@ export async function generateWorkoutPlan(data: OnboardingData) {
     Output ONLY the JSON object.
   `;
 
-    try {
-        const model = genAI.getGenerativeModel({
-            model: modelName,
-            generationConfig: {
-                responseMimeType: "application/json",
-            },
-            systemInstruction: "You are an Elite Fitness Architect. You generate ultra-personalized, data-driven training protocols. Output ONLY valid JSON that strictly follows the provided schema.",
-        });
+    let lastError = null;
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+    for (const modelName of modelOptions) {
+        try {
+            console.log(`AI Protocol: Attempting generation with ${modelName}...`);
+            const model = genAI.getGenerativeModel({
+                model: modelName,
+                generationConfig: {
+                    responseMimeType: modelName.includes("1.5") ? "application/json" : "text/plain",
+                },
+                systemInstruction: "You are an Elite Fitness Architect. Output ONLY valid JSON."
+            });
 
-        const rawJson = JSON.parse(text);
-        return WorkoutPlanSchema.parse(rawJson);
-    } catch (error: any) {
-        console.error("Gemini AI Attempt 1 (Flash) Failed:", error.message);
+            const result = await model.generateContent(prompt + (modelName.includes("1.5") ? "" : " Output ONLY valid JSON."));
+            const response = await result.response;
+            const text = response.text();
 
-        // Fallback to gemini-pro if Flash is 404
-        if (error.message?.includes('404')) {
-            console.log("Attempting fallback to gemini-pro...");
-            try {
-                const fallbackModel = genAI.getGenerativeModel({
-                    model: "gemini-pro",
-                    generationConfig: {
-                        // Note: gemini-pro (v1) might not support responseMimeType: "application/json" as strictly 
-                        // but it's better than nothing.
-                    }
-                });
-                const result = await fallbackModel.generateContent(prompt + " Output ONLY valid JSON.");
-                const response = await result.response;
-                const text = response.text();
-                // Strip markdown if needed
-                const jsonStr = text.replace(/```json|```/g, '').trim();
-                const rawJson = JSON.parse(jsonStr);
-                return WorkoutPlanSchema.parse(rawJson);
-            } catch (fallbackError: any) {
-                console.error("Gemini AI Fallback (Pro) also failed:", fallbackError.message);
-                throw new Error(`AI Service Unavailable. Both Flash and Pro models returned errors. ${fallbackError.message}`);
-            }
+            // Clean up the response in case it's wrapped in markdown
+            const jsonStr = text.replace(/```json|```/g, '').trim();
+            const rawJson = JSON.parse(jsonStr);
+
+            console.log(`AI Protocol: Success with ${modelName}`);
+            return WorkoutPlanSchema.parse(rawJson);
+        } catch (error: any) {
+            console.error(`AI Protocol: ${modelName} failed - ${error.message}`);
+            lastError = error;
+            // If it's not a 404 (e.g., safety block, invalid key), we might want to stop, 
+            // but for now we keep trying other models.
         }
-
-        throw new Error(`AI Generation Failed: ${error.message || 'Unknown protocol error'}`);
     }
+
+    throw new Error(`AI Service Unavailable. All available models failed. Final error: ${lastError?.message || 'Unknown protocol failure'}. Please verify your GOOGLE_AI_API_KEY.`);
 }
