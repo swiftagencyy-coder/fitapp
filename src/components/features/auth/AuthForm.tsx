@@ -111,7 +111,7 @@ export function AuthForm({ type, onSubmit }: AuthFormProps) {
                             type="email"
                             placeholder="m@example.com"
                             {...register('email')}
-                            className="bg-white/5 border-white/10 h-14 rounded-2xl text-lg px-6 focus:ring-primary/50 focus:border-primary transition-all backdrop-blur-sm"
+                            className="bg-white/5 border-white/10 h-14 rounded-2xl text-lg px-6 focus:ring-primary/50 focus:border-primary transition-all backdrop-blur-sm text-white"
                         />
                         {errors.email && <p className="text-xs text-destructive ml-1">{errors.email.message}</p>}
                     </div>
@@ -123,7 +123,7 @@ export function AuthForm({ type, onSubmit }: AuthFormProps) {
                             type="password"
                             placeholder="••••••••"
                             {...register('password')}
-                            className="bg-white/5 border-white/10 h-14 rounded-2xl text-lg px-6 focus:ring-primary/50 focus:border-primary transition-all backdrop-blur-sm"
+                            className="bg-white/5 border-white/10 h-14 rounded-2xl text-lg px-6 focus:ring-primary/50 focus:border-primary transition-all backdrop-blur-sm text-white"
                         />
                         {errors.password && <p className="text-xs text-destructive ml-1">{errors.password.message}</p>}
                     </div>
