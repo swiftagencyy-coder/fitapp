@@ -21,7 +21,7 @@ export async function generateWorkoutPlan(data: OnboardingData) {
   `;
 
     const response = await openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
             { role: 'system', content: 'You are a professional strength and hypertrophy coach. Output only valid JSON.' },
             { role: 'user', content: prompt }
