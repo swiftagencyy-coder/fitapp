@@ -1,6 +1,6 @@
 'use client';
 
-import { Dumbbell, Target, TrendingUp, Calendar, ArrowRight } from 'lucide-react';
+import { Dumbbell, Target, TrendingUp, Calendar, ArrowRight, Zap, MessageSquare } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -12,7 +12,6 @@ const stats = [
     { label: 'Next Session', value: 'Legs A', icon: Calendar, color: 'text-purple-500' },
 ];
 
-import { Zap } from 'lucide-react';
 
 export default function DashboardPage() {
     return (
