@@ -37,13 +37,17 @@ export async function GET() {
       results.testStandardError = e.message;
     }
 
-    // Test 3: Prefixed ID (models/gemini-1.5-flash)
+    // Test 4: Raw Fetch (v1/v1beta)
     try {
-      const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
-      const res = await model.generateContent("test");
-      results.testPrefixed = "Success";
+      const rawRes = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: "ping" }] }] })
+      });
+      results.rawFetchStatus = rawRes.status;
+      results.rawFetchText = await rawRes.text();
     } catch (e: any) {
-      results.testPrefixedError = e.message;
+      results.rawFetchError = e.message;
     }
 
     return NextResponse.json(results);
