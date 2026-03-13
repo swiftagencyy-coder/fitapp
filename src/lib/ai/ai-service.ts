@@ -9,13 +9,16 @@ export async function generateWorkoutPlan(data: OnboardingData) {
     // List of potential model identifiers to try in order of preference
     const modelOptions = [
         "gemini-1.5-flash",
+        "models/gemini-1.5-flash",
         "gemini-1.5-flash-latest",
         "gemini-1.5-flash-001",
         "gemini-2.0-flash-exp",
         "gemini-1.5-pro",
+        "models/gemini-1.5-pro",
         "gemini-1.0-pro",
         "gemini-pro"
     ];
+ Riverside
 
     const prompt = `
     Role: Elite Fitness Architect.

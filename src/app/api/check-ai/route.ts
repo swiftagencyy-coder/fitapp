@@ -11,30 +11,47 @@ export async function GET() {
   const genAI = new GoogleGenerativeAI(apiKey);
   
   try {
-    // Attempt to list models to see what this key can access
-    // Note: listModels is a newer method in the SDK
-    const modelsResult = ("listModels" in genAI) ? 
-                          // @ts-ignore
-                          await genAI.listModels() : 
-                          { models: [] };
-
-    // Also attempt a very basic "Hello" with the most likely model
-    const testModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const testResult = await testModel.generateContent("Say 'AI Active'").catch(e => ({ error: e.message }));
-
-    return NextResponse.json({
-      status: "Connected",
-      availableModels: modelsResult.models?.map((m: any) => m.name) || "listModels() unavailable or failed",
-      testResult: "response" in testResult ? (await testResult.response).text() : testResult.error,
+    const results: any = {
       apiKeyPrefix: apiKey.substring(0, 5) + "...",
-      timestamp: new Date().toISOString()
-    });
+      timestamp: new Date().toISOString(),
+      tests: []
+    };
+
+    // Test 1: List Models (v1/v1beta)
+    try {
+      const modelsResult = ("listModels" in genAI) ? 
+                            // @ts-ignore
+                            await genAI.listModels() : 
+                            { models: [] };
+      results.availableModels = modelsResult.models?.map((m: any) => m.name) || [];
+    } catch (e: any) {
+      results.listModelsError = e.message;
+    }
+
+    // Test 2: Standard ID (gemini-1.5-flash)
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const res = await model.generateContent("test");
+      results.testStandard = "Success";
+    } catch (e: any) {
+      results.testStandardError = e.message;
+    }
+
+    // Test 3: Prefixed ID (models/gemini-1.5-flash)
+    try {
+      const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
+      const res = await model.generateContent("test");
+      results.testPrefixed = "Success";
+    } catch (e: any) {
+      results.testPrefixedError = e.message;
+    }
+
+    return NextResponse.json(results);
   } catch (error: any) {
     return NextResponse.json({
-      status: "Error",
+      status: "Fatal Error",
       message: error.message,
-      stack: error.stack,
-      apiKeyPrefix: apiKey.substring(0, 5) + "..."
+      apiKeyPrefix: (process.env.GOOGLE_AI_API_KEY || "").substring(0, 5) + "..."
     }, { status: 500 });
   }
 }
