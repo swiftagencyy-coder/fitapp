@@ -1,20 +1,14 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from 'openai';
 import { OnboardingData } from '@/types/onboarding';
 import { WorkoutPlanSchema } from '@/types/workout';
 
-// Initialize the Google Generative AI SDK
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || "");
+// Initialize the OpenAI SDK
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
 
 export async function generateWorkoutPlan(data: OnboardingData) {
-    // List of potential model identifiers to try in order of preference
-    const modelOptions = [
-        "gemini-1.5-flash",
-        "models/gemini-1.5-flash",
-        "gemini-1.5-flash-latest",
-        "gemini-1.5-flash-001",
-        "gemini-2.0-flash-exp",
-        "gemini-1.5-pro",
-    ];
+    console.log('AI Protocol: Initiating generation via OpenAI (gpt-4o-mini)...');
 
     const prompt = `
     Role: Elite Fitness Architect.
@@ -35,39 +29,39 @@ export async function generateWorkoutPlan(data: OnboardingData) {
         - exercises: array of objects with (name, target_sets, target_reps, rest_seconds, tempo, notes)
     
     Ensure all exercises are appropriate for a ${data.training_environment} setting.
-    Output ONLY the JSON object.
+    Output ONLY valid JSON.
   `;
 
-    let lastError = null;
-
-    for (const modelName of modelOptions) {
-        try {
-            console.log(`AI Protocol: Attempting generation with ${modelName}...`);
-            const model = genAI.getGenerativeModel({
-                model: modelName,
-                generationConfig: {
-                    responseMimeType: modelName.includes("1.5") ? "application/json" : "text/plain",
+    try {
+        const response = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+                {
+                    role: 'system',
+                    content: 'You are an Elite Fitness Architect. You generate ultra-personalized, data-driven training protocols. Output ONLY valid JSON that strictly follows the provided schema.',
                 },
-                systemInstruction: "You are an Elite Fitness Architect. Output ONLY valid JSON."
-            });
+                {
+                    role: 'user',
+                    content: prompt,
+                },
+            ],
+            response_format: { type: 'json_object' },
+            temperature: 0.7,
+        });
 
-            const result = await model.generateContent(prompt + (modelName.includes("1.5") ? "" : " Output ONLY valid JSON."));
-            const response = await result.response;
-            const text = response.text();
+        const content = response.choices[0].message.content;
+        if (!content) throw new Error('AI returned empty response');
 
-            // Clean up the response in case it's wrapped in markdown
-            const jsonStr = text.replace(/```json|```/g, '').trim();
-            const rawJson = JSON.parse(jsonStr);
-
-            console.log(`AI Protocol: Success with ${modelName}`);
-            return WorkoutPlanSchema.parse(rawJson);
-        } catch (error: any) {
-            console.error(`AI Protocol: ${modelName} failed - ${error.message}`);
-            lastError = error;
-            // If it's not a 404 (e.g., safety block, invalid key), we might want to stop, 
-            // but for now we keep trying other models.
+        const rawJson = JSON.parse(content);
+        console.log('AI Protocol: Success with OpenAI');
+        return WorkoutPlanSchema.parse(rawJson);
+    } catch (error: any) {
+        console.error('OpenAI AI Core Error:', error);
+        
+        if (error.status === 429) {
+            throw new Error("OpenAI Quota Exceeded. Please check your billing/credit balance.");
         }
+        
+        throw new Error(`AI Generation Failed: ${error.message || 'Unknown protocol error'}`);
     }
-
-    throw new Error(`AI Service Unavailable. All available models failed. Final error: ${lastError?.message || 'Unknown protocol failure'}. Please verify your GOOGLE_AI_API_KEY.`);
 }
