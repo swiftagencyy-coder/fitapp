@@ -14,11 +14,7 @@ export async function generateWorkoutPlan(data: OnboardingData) {
         "gemini-1.5-flash-001",
         "gemini-2.0-flash-exp",
         "gemini-1.5-pro",
-        "models/gemini-1.5-pro",
-        "gemini-1.0-pro",
-        "gemini-pro"
     ];
- Riverside
 
     const prompt = `
     Role: Elite Fitness Architect.
